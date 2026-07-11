@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quantum AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Core palette */
+  --bg:         #0c0c0e;
+  --bg2:        #111114;
+  --panel:      #13131a;
+  --surface:    #1a1a24;
+  --surface2:   #20202d;
+  --surface3:   #282838;
+  --border:     #1e1e2e;
+  --border2:    #2a2a3e;
+  --border3:    #35354d;
+
+  /* Accent — deep violet → electric indigo */
+  --a1:  #6d28d9;
+  --a2:  #7c3aed;
+  --a3:  #8b5cf6;
+  --a4:  #a78bfa;
+
+  /* Text */
+  --t1:  #f0f0f8;
+  --t2:  #9090b0;
+  --t3:  #555570;
+  --t4:  #333348;
+
+  /* Status */
+  --green:  #22c55e;
+  --red:    #ef4444;
+  --amber:  #f59e0b;
+
+  /* Glow */
+  --glow:  rgba(139,92,246,.18);
+  --glow2: rgba(139,92,246,.08);
+
+  --r:  16px;
+  --rs: 10px;
+  --rr: 99px;
+}
+
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--t1);
+  display: flex;
+  height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border3); border-radius: var(--rr); }
+::-webkit-scrollbar-thumb:hover { background: var(--a3); }
+
+/* ══════════════════════════════════════════
+   SIDEBAR
+══════════════════════════════════════════ */
+.sidebar {
+  width: 268px;
+  flex-shrink: 0;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: relative;
+  transition: width .25s cubic-bezier(.4,0,.2,1);
+}
+
+/* subtle gradient on left edge */
+.sidebar::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--a2) 50%, transparent);
+  opacity: .25;
+}
+
+/* ── Logo area ── */
+.sb-logo {
+  padding: 18px 18px 14px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.logo-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--a3), var(--a1));
+  border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 20px var(--glow), 0 2px 8px rgba(0,0,0,.4);
+  position: relative;
+  overflow: hidden;
+}
+.logo-icon::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 70%; height: 70%;
+  background: rgba(255,255,255,.15);
+  border-radius: 50%;
+}
+.logo-icon svg { width: 17px; height: 17px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; position: relative; z-index: 1; }
+
+.logo-name { display: flex; flex-direction: column; gap: 1px; }
+.logo-name span:first-child { font-size: .95rem; font-weight: 700; letter-spacing: -.02em; color: var(--t1); }
+.logo-name span:last-child  { font-size: .62rem; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--a4); }
+
+/* ── New chat ── */
+.btn-new {
+  margin: 12px 12px 6px;
+  display: flex; align-items: center; gap: 9px;
+  padding: 10px 14px;
+  border-radius: var(--rs);
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--t1);
+  font-size: .82rem; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+  transition: background .15s, border-color .2s, box-shadow .2s;
+  letter-spacing: .01em;
+  flex-shrink: 0;
+}
+.btn-new:hover {
+  background: var(--surface2);
+  border-color: var(--a3);
+  box-shadow: 0 0 14px var(--glow2);
+}
+.btn-new svg { width: 14px; height: 14px; stroke: var(--a4); fill: none; stroke-width: 2.5; stroke-linecap: round; flex-shrink: 0; }
+
+/* ── Search ── */
+.sb-search {
+  margin: 0 12px 8px;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--rs);
+  padding: 7px 11px;
+  flex-shrink: 0;
+}
+.sb-search svg { width: 13px; height: 13px; stroke: var(--t3); fill: none; stroke-width: 2; stroke-linecap: round; flex-shrink: 0; }
+.sb-search input {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: var(--t1); font-size: .8rem; font-family: inherit;
+}
+.sb-search input::placeholder { color: var(--t3); }
+
+/* ── History ── */
+.sb-section-label {
+  font-size: .62rem; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--t4);
+  padding: 8px 16px 4px;
+  flex-shrink: 0;
+}
+
+.hist-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hist-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--rs);
+  cursor: pointer; color: var(--t2);
+  font-size: .8rem;
+  transition: background .12s, color .12s;
+  position: relative;
+  group: 1;
+}
+.hist-item:hover { background: var(--surface); color: var(--t1); }
+.hist-item.active {
+  background: rgba(139,92,246,.12);
+  color: var(--a4);
+  border: 1px solid rgba(139,92,246,.15);
+}
+.hist-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 2px; height: 60%;
+  background: var(--a3);
+  border-radius: var(--rr);
+}
+.hist-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--t4);
+  flex-shrink: 0;
+  transition: background .15s;
+}
+.hist-item.active .hist-dot { background: var(--a3); }
+.hist-title { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hist-time { font-size: .68rem; color: var(--t4); flex-shrink: 0; opacity: 0; transition: opacity .15s; }
+.hist-item:hover .hist-time { opacity: 1; }
+
+.hist-del {
+  opacity: 0; background: none; border: none; cursor: pointer;
+  color: var(--t3); padding: 3px; border-radius: 5px;
+  display: flex; align-items: center; flex-shrink: 0;
+  transition: opacity .12s, color .12s, background .12s;
+}
+.hist-item:hover .hist-del { opacity: 1; }
+.hist-del:hover { color: var(--red); background: rgba(239,68,68,.1); }
+.hist-del svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+
+.empty-hist {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px; padding: 28px 16px; text-align: center;
+}
+.empty-hist svg { width: 28px; height: 28px; stroke: var(--t4); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.empty-hist span { font-size: .78rem; color: var(--t3); }
+
+/* ── Sidebar footer ── */
+.sb-footer {
+  border-top: 1px solid var(--border);
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.sb-foot-btn {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 8px 10px;
+  border-radius: var(--rs); border: none;
+  background: transparent; color: var(--t2);
+  font-size: .8rem; cursor: pointer;
+  font-family: inherit;
+  transition: background .12s, color .12s;
+  text-align: left;
+}
+.sb-foot-btn:hover { background: var(--surface); color: var(--t1); }
+.sb-foot-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
+/* Status dot */
+.status-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px;
+  font-size: .75rem; color: var(--t3);
+}
+.status-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  flex-shrink: 0;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+
+
+/* ══════════════════════════════════════════
+   MAIN
+══════════════════════════════════════════ */
+.main {
+  flex: 1;
+  display: flex; flex-direction: column;
+  height: 100vh;
+  min-width: 0;
+  background: var(--bg);
+  position: relative;
+}
+
+/* ambient glow behind chat */
+.main::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 600px; height: 300px;
+  background: radial-gradient(ellipse, rgba(139,92,246,.04) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Top bar ── */
+.top-bar {
+  height: 52px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 20px; gap: 10px;
+  flex-shrink: 0;
+  background: var(--bg);
+  z-index: 1;
+}
+.top-title {
+  font-size: .85rem; font-weight: 600; color: var(--t2);
+  flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  letter-spacing: -.01em;
+}
+.top-actions { display: flex; align-items: center; gap: 6px; }
+.top-btn {
+  width: 30px; height: 30px;
+  border-radius: var(--rs); border: 1px solid var(--border2);
+  background: var(--surface); color: var(--t2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background .12s, color .12s, border-color .15s;
+}
+.top-btn:hover { background: var(--surface2); color: var(--t1); border-color: var(--border3); }
+.top-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.model-pill {
+  font-size: .68rem; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 4px 11px; border-radius: var(--rr);
+  background: rgba(139,92,246,.1);
+  color: var(--a4);
+  border: 1px solid rgba(139,92,246,.2);
+  white-space: nowrap;
+}
+
+/* ── Chat window ── */
+.chat-win {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 0 8px;
+  display: flex; flex-direction: column;
+  position: relative; z-index: 1;
+}
+
+/* ── Welcome ── */
+.welcome {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  flex: 1; text-align: center;
+  padding: 32px 20px; gap: 0;
+}
+
+.w-orb {
+  width: 64px; height: 64px;
+  background: linear-gradient(135deg, var(--a3), var(--a1));
+  border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 40px var(--glow), 0 0 80px rgba(139,92,246,.06), 0 4px 16px rgba(0,0,0,.5);
+  margin-bottom: 18px;
+  animation: orb-float 4s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+.w-orb::after {
+  content: '';
+  position: absolute;
+  top: -30%; left: -30%;
+  width: 60%; height: 60%;
+  background: rgba(255,255,255,.12);
+  border-radius: 50%;
+}
+.w-orb svg { width: 30px; height: 30px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@keyframes orb-float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-5px); } }
+
+.welcome h1 {
+  font-size: 1.8rem; font-weight: 700;
+  letter-spacing: -.03em; color: var(--t1);
+  margin-bottom: 8px;
+}
+.welcome h1 span { background: linear-gradient(90deg, var(--a3), var(--a4)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.welcome p {
+  font-size: .88rem; color: var(--t2);
+  max-width: 340px; line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+.sug-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; width: 100%; max-width: 520px;
+}
+.sug-card {
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  text-align: left; cursor: pointer;
+  transition: border-color .15s, background .15s, transform .15s, box-shadow .15s;
+  font-family: inherit; color: var(--t1);
+}
+.sug-card:hover {
+  border-color: var(--a3);
+  background: var(--surface);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px var(--glow2);
+}
+.sug-card:active { transform: translateY(0); }
+.sug-icon { font-size: 1.1rem; margin-bottom: 6px; display: block; }
+.sug-label { font-size: .68rem; font-weight: 600; color: var(--t3); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 4px; }
+.sug-text  { font-size: .8rem; font-weight: 500; line-height: 1.4; color: var(--t2); }
+
+/* ── Messages ── */
+.msg-row {
+  display: flex;
+  padding: 4px 20px;
+  gap: 10px;
+  animation: fadeUp .22s ease;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+.msg-row.user { justify-content: flex-end; }
+
+.av {
+  width: 28px; height: 28px;
+  border-radius: 9px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .7rem; font-weight: 700;
+  margin-top: 2px;
+}
+.av.ai {
+  background: linear-gradient(135deg, var(--a3), var(--a1));
+  box-shadow: 0 0 12px var(--glow);
+}
+.av.ai svg { width: 14px; height: 14px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.av.usr {
+  background: var(--surface3);
+  color: var(--t2);
+  border: 1px solid var(--border3);
+  font-size: .72rem;
+}
+
+.bubble {
+  max-width: min(74%, 680px);
+  padding: 11px 15px;
+  border-radius: var(--r);
+  font-size: .875rem;
+  line-height: 1.7;
+  word-break: break-word;
+  position: relative;
+}
+.bubble.user {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-bottom-right-radius: 4px;
+  color: var(--t1);
+}
+.bubble.ai {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+  color: var(--t1);
+}
+
+/* Code in bubbles */
+.bubble pre {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--rs);
+  padding: 12px 14px;
+  margin: 10px 0;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .78rem;
+  line-height: 1.6;
+  position: relative;
+}
+.bubble pre::before {
+  content: attr(data-lang);
+  position: absolute; top: 8px; right: 10px;
+  font-size: .6rem; color: var(--t3); font-family: 'Inter', sans-serif;
+  text-transform: uppercase; letter-spacing: .08em;
+}
+.bubble code { font-family: 'JetBrains Mono', monospace; font-size: .82em; background: var(--surface2); padding: 2px 5px; border-radius: 4px; color: var(--a4); }
+.bubble pre code { background: transparent; padding: 0; color: var(--t1); font-size: 1em; }
+.bubble strong { font-weight: 600; color: var(--t1); }
+.bubble em { color: var(--t2); }
+.bubble p + p { margin-top: 8px; }
+.bubble ul, .bubble ol { padding-left: 20px; margin: 6px 0; }
+.bubble li { margin: 3px 0; color: var(--t2); }
+.bubble li::marker { color: var(--a3); }
+.bubble h3 { font-size: .9rem; font-weight: 600; margin: 10px 0 4px; color: var(--t1); }
+.bubble a { color: var(--a4); text-decoration: none; }
+.bubble a:hover { text-decoration: underline; }
+
+/* msg meta row */
+.msg-meta {
+  display: flex; align-items: center; gap: 8px;
+  padding: 2px 0 6px;
+  margin: 0 auto;
+  max-width: 900px;
+  width: 100%;
+  padding-left: 58px;
+}
+.msg-row.user + .msg-meta { justify-content: flex-end; padding-right: 20px; padding-left: 0; }
+.msg-time { font-size: .65rem; color: var(--t4); }
+.copy-btn {
+  font-size: .65rem; color: var(--t4); background: none; border: none;
+  cursor: pointer; font-family: inherit; padding: 1px 4px; border-radius: 4px;
+  transition: color .12s, background .12s;
+  display: flex; align-items: center; gap: 3px;
+}
+.copy-btn:hover { color: var(--t2); background: var(--surface); }
+.copy-btn svg { width: 10px; height: 10px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+
+/* ── Typing ── */
+.typing-dots { display: flex; gap: 4px; align-items: center; padding: 4px 2px; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--t3); animation: db 1.1s ease-in-out infinite; }
+.dot:nth-child(2) { animation-delay: .16s; }
+.dot:nth-child(3) { animation-delay: .32s; }
+@keyframes db { 0%,60%,100% { transform:translateY(0); opacity:.4; } 30% { transform:translateY(-6px); opacity:1; } }
+
+/* ── Day divider ── */
+.day-divider {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px; max-width: 900px; width: 100%; margin: 0 auto;
+}
+.day-divider::before, .day-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+.day-divider span { font-size: .65rem; color: var(--t4); white-space: nowrap; letter-spacing: .06em; text-transform: uppercase; }
+
+
+/* ══════════════════════════════════════════
+   INPUT
+══════════════════════════════════════════ */
+.input-area {
+  padding: 10px 20px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+  position: relative; z-index: 1;
+}
+
+.input-wrap {
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  display: flex; align-items: flex-end;
+  transition: border-color .2s, box-shadow .2s;
+  overflow: hidden;
+  max-width: 860px;
+  margin: 0 auto;
+}
+.input-wrap:focus-within {
+  border-color: var(--a2);
+  box-shadow: 0 0 0 3px rgba(124,58,237,.12), 0 0 20px var(--glow2);
+}
+
+#user-input {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: var(--t1); font-size: .88rem; font-family: inherit;
+  padding: 13px 14px; resize: none; line-height: 1.6;
+  max-height: 160px; min-height: 46px; overflow-y: auto;
+}
+#user-input::placeholder { color: var(--t3); }
+
+.input-side {
+  display: flex; align-items: flex-end;
+  padding: 8px 8px;
+  gap: 5px; flex-shrink: 0;
+}
+
+.input-icon-btn {
+  width: 30px; height: 30px;
+  border-radius: var(--rs); border: none;
+  background: transparent; color: var(--t3);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background .12s, color .12s;
+}
+.input-icon-btn:hover { background: var(--surface); color: var(--t2); }
+.input-icon-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.send-btn {
+  width: 34px; height: 34px; border-radius: var(--rs);
+  background: linear-gradient(135deg, var(--a3), var(--a1));
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 10px var(--glow);
+  transition: opacity .15s, transform .1s, box-shadow .15s;
+  flex-shrink: 0;
+}
+.send-btn:hover { opacity: .88; box-shadow: 0 4px 18px var(--glow); }
+.send-btn:active { transform: scale(.92); }
+.send-btn:disabled { opacity: .2; cursor: not-allowed; transform: none; }
+.send-btn svg { width: 14px; height: 14px; stroke: white; fill: none; stroke-width: 2.3; stroke-linecap: round; stroke-linejoin: round; }
+
+.input-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 2px 0;
+  max-width: 860px; margin: 0 auto;
+}
+.input-hint { font-size: .65rem; color: var(--t4); }
+.char-count { font-size: .65rem; color: var(--t4); }
+.char-count.warn { color: var(--amber); }
+
+
+/* ══════════════════════════════════════════
+   SETTINGS MODAL
+══════════════════════════════════════════ */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.7);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  align-items: center; justify-content: center;
+}
+.overlay.open { display: flex; }
+
+.modal {
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  width: 420px; max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  box-shadow: 0 32px 80px rgba(0,0,0,.7), 0 0 0 1px rgba(139,92,246,.08);
+  animation: mIn .2s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes mIn { from { opacity:0; transform:scale(.94) translateY(14px); } to { opacity:1; transform:scale(1) translateY(0); } }
+
+.modal-head {
+  padding: 20px 22px 16px;
+  display: flex; align-items: center; gap: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-head-icon {
+  width: 34px; height: 34px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--rs);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.modal-head-icon svg { width: 16px; height: 16px; stroke: var(--a4); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.modal-head-text { flex: 1; }
+.modal-head-text h2 { font-size: 1rem; font-weight: 700; letter-spacing: -.01em; }
+.modal-head-text p  { font-size: .72rem; color: var(--t3); margin-top: 1px; }
+.modal-close {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: none; border: none; cursor: pointer;
+  color: var(--t3); display: flex; align-items: center; justify-content: center;
+  transition: background .12s, color .12s;
+}
+.modal-close:hover { background: var(--surface2); color: var(--t1); }
+.modal-close svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; }
+
+/* Settings sections */
+.modal-section { padding: 14px 22px 0; }
+.modal-section-label {
+  font-size: .62rem; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--t4);
+  margin-bottom: 8px;
+}
+.modal-section-cards {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.s-row {
+  display: flex; align-items: center;
+  gap: 14px; padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
+  transition: background .1s;
+}
+.s-row:last-child { border-bottom: none; }
+.s-row:hover { background: rgba(255,255,255,.015); }
+
+.s-left { flex: 1; min-width: 0; }
+.s-left label { display: block; font-size: .85rem; font-weight: 500; cursor: pointer; color: var(--t1); margin-bottom: 2px; }
+.s-desc { font-size: .72rem; color: var(--t3); line-height: 1.45; }
+
+/* Toggle */
+.toggle { position: relative; width: 42px; height: 24px; display: inline-block; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.t-track { position: absolute; inset: 0; background: var(--surface3); border-radius: var(--rr); transition: background .22s; border: 1px solid var(--border3); }
+.toggle input:checked ~ .t-track { background: var(--a2); border-color: var(--a2); }
+.t-thumb { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: white; box-shadow: 0 1px 4px rgba(0,0,0,.4); transition: transform .22s cubic-bezier(.34,1.56,.64,1); }
+.toggle input:checked ~ .t-thumb { transform: translateX(18px); }
+
+/* Select */
+.s-select {
+  background: var(--surface2); border: 1px solid var(--border3);
+  color: var(--t1); padding: 6px 10px;
+  border-radius: var(--rs); font-size: .78rem; font-family: inherit;
+  cursor: pointer; outline: none;
+  transition: border-color .15s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6' fill='none' stroke='%23555570' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+}
+.s-select:focus { border-color: var(--a3); }
+
+/* Danger zone */
+.danger-section { padding: 0 22px 22px; }
+.danger-cards {
+  background: rgba(239,68,68,.04);
+  border: 1px solid rgba(239,68,68,.12);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+.d-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 13px 16px;
+  border-bottom: 1px solid rgba(239,68,68,.08);
+}
+.d-row:last-child { border-bottom: none; }
+.d-left { flex: 1; }
+.d-left label { display: block; font-size: .85rem; font-weight: 500; color: var(--red); margin-bottom: 2px; }
+.d-left .d-desc { font-size: .72rem; color: var(--t3); }
+
+.d-btn {
+  background: rgba(239,68,68,.1); color: var(--red);
+  border: 1px solid rgba(239,68,68,.25); padding: 6px 14px;
+  border-radius: var(--rs); cursor: pointer; font-size: .78rem;
+  font-weight: 600; font-family: inherit; white-space: nowrap;
+  transition: background .15s, border-color .15s;
+  flex-shrink: 0;
+}
+.d-btn:hover { background: rgba(239,68,68,.18); border-color: rgba(239,68,68,.5); }
+
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: var(--surface2);
+  border: 1px solid var(--border3);
+  color: var(--t1);
+  padding: 9px 18px 9px 14px;
+  border-radius: var(--rr);
+  font-size: .8rem; font-weight: 500;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s, transform .22s cubic-bezier(.34,1.56,.64,1);
+  z-index: 300; display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast svg { width: 14px; height: 14px; stroke: var(--green); fill: none; stroke-width: 2.5; stroke-linecap: round; flex-shrink: 0; }
+.toast.err svg { stroke: var(--red); }
+
+/* ══════════════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════ SIDEBAR ════ -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    </div>
+    <div class="logo-name">
+      <span>Quantum AI</span>
+      <span>Beta · v2.0</span>
+    </div>
+  </div>
+
+  <button class="btn-new" onclick="newChat()">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    New conversation
+  </button>
+
+  <div class="sb-search">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="search-input" placeholder="Search chats…" oninput="filterHistory(this.value)" autocomplete="off">
+  </div>
+
+  <div class="sb-section-label">Conversations</div>
+  <div class="hist-list" id="history-list"></div>
+
+  <div class="sb-footer">
+    <div class="status-row">
+      <div class="status-dot"></div>
+      <span>Quantum 1.0 · Local mode</span>
+    </div>
+    <button class="sb-foot-btn" onclick="openSettings()">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Settings
+    </button>
+    <button class="sb-foot-btn" onclick="exportChats()">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export chats
+    </button>
+  </div>
+</aside>
+
+<!-- ════ MAIN ════ -->
+<main class="main">
+  <div class="top-bar">
+    <span class="top-title" id="top-title">Quantum AI</span>
+    <div class="top-actions">
+      <button class="top-btn" onclick="clearChat()" title="Clear chat">
+        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+      </button>
+      <button class="top-btn" onclick="openSettings()" title="Settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </button>
+      <span class="model-pill">Quantum 1.0</span>
+    </div>
+  </div>
+
+  <div class="chat-win" id="chat-win"></div>
+
+  <div class="input-area">
+    <div class="input-wrap">
+      <textarea id="user-input" rows="1" placeholder="Ask me anything…" autocomplete="off"></textarea>
+      <div class="input-side">
+        <button class="send-btn" id="send-btn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="input-footer">
+      <span class="input-hint">Enter to send &nbsp;·&nbsp; Shift+Enter for new line</span>
+      <span class="char-count" id="char-count"></span>
+    </div>
+  </div>
+</main>
+
+<!-- ════ SETTINGS MODAL ════ -->
+<div class="overlay" id="settings-overlay" onclick="overlayBg(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </div>
+      <div class="modal-head-text">
+        <h2>Settings</h2>
+        <p>Customise your Quantum AI experience</p>
+      </div>
+      <button class="modal-close" onclick="closeSettings()">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Behaviour -->
+    <div class="modal-section">
+      <div class="modal-section-label">Behaviour</div>
+      <div class="modal-section-cards">
+        <div class="s-row">
+          <div class="s-left">
+            <label for="tog-enter">Send on Enter</label>
+            <div class="s-desc">Press Enter to send · Shift+Enter for a new line</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="tog-enter" checked><div class="t-track"></div><div class="t-thumb"></div></label>
+        </div>
+        <div class="s-row">
+          <div class="s-left">
+            <label for="tog-stream">Streaming replies</label>
+            <div class="s-desc">Show typing indicator before response appears</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="tog-stream" checked><div class="t-track"></div><div class="t-thumb"></div></label>
+        </div>
+        <div class="s-row">
+          <div class="s-left">
+            <label for="tog-timestamps">Show timestamps</label>
+            <div class="s-desc">Display time under each message</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="tog-timestamps" checked><div class="t-track"></div><div class="t-thumb"></div></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="modal-section">
+      <div class="modal-section-label">Sound & Notifications</div>
+      <div class="modal-section-cards">
+        <div class="s-row">
+          <div class="s-left">
+            <label for="tog-sound">Sound effects</label>
+            <div class="s-desc">Play a subtle chime when a reply arrives</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="tog-sound"><div class="t-track"></div><div class="t-thumb"></div></label>
+        </div>
+        <div class="s-row">
+          <div class="s-left">
+            <label for="tog-autoscroll">Auto-scroll</label>
+            <div class="s-desc">Automatically scroll to new messages</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="tog-autoscroll" checked><div class="t-track"></div><div class="t-thumb"></div></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Appearance -->
+    <div class="modal-section">
+      <div class="modal-section-label">Appearance</div>
+      <div class="modal-section-cards">
+        <div class="s-row">
+          <div class="s-left">
+            <label for="sel-fontsize">Font size</label>
+            <div class="s-desc">Adjust chat text size</div>
+          </div>
+          <select class="s-select" id="sel-fontsize" onchange="changeFontSize(this.value)">
+            <option value="13">Small</option>
+            <option value="14" selected>Default</option>
+            <option value="16">Large</option>
+            <option value="18">X-Large</option>
+          </select>
+        </div>
+        <div class="s-row">
+          <div class="s-left">
+            <label for="tog-compact">Compact mode</label>
+            <div class="s-desc">Tighter spacing between messages</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="tog-compact"><div class="t-track"></div><div class="t-thumb"></div></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Danger zone -->
+    <div class="modal-section">
+      <div class="modal-section-label" style="color:rgba(239,68,68,.6)">Danger zone</div>
+    </div>
+    <div class="danger-section">
+      <div class="danger-cards">
+        <div class="d-row">
+          <div class="d-left">
+            <label>Clear current chat</label>
+            <div class="d-desc">Removes all messages from this session only</div>
+          </div>
+          <button class="d-btn" onclick="clearChat(); closeSettings();">Clear chat</button>
+        </div>
+        <div class="d-row">
+          <div class="d-left">
+            <label>Delete all conversations</label>
+            <div class="d-desc">Permanently deletes every session and its history</div>
+          </div>
+          <button class="d-btn" onclick="deleteAll()">Delete all</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+// ══════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════
+let sessions = JSON.parse(localStorage.getItem('qai_s') || '[]');
+let cid      = localStorage.getItem('qai_cur') || null;
+let busy     = false;
+
+if (cid && !sessions.find(s => s.id === cid)) {
+  cid = sessions.length ? sessions[sessions.length-1].id : null;
+}
+
+// ══════════════════════════════════════
+//  SUGGESTION CARDS
+// ══════════════════════════════════════
+const SUGS = [
+  { icon:'💡', lbl:'Explain', txt:'Explain quantum entanglement in simple terms' },
+  { icon:'💻', lbl:'Write code', txt:'Write a Python function to find all prime numbers up to n' },
+  { icon:'✍️', lbl:'Creative', txt:'Write a noir detective story opening set in 2077' },
+  { icon:'🚀', lbl:'Brainstorm', txt:'Give me 10 startup ideas that could change the world' },
+];
+
+// ══════════════════════════════════════
+//  KNOWLEDGE BASE — rich responses
+// ══════════════════════════════════════
+const KB = [
+  {
+    match: /\b(hi|hello|hey|howdy|hiya|sup)\b/i,
+    replies: [
+      "Hey! Great to have you here. What are we exploring today?",
+      "Hello! I'm Quantum AI — ready to help with anything. What's on your mind?",
+      "Hey there! Ask me anything — code, science, writing, ideas, you name it. 🚀"
+    ]
+  },
+  {
+    match: /how are you|how r u|you doing|you okay/i,
+    replies: [
+      "Running at full capacity and genuinely happy to chat! What can I help you with?",
+      "All circuits green! Thanks for asking. What would you like to dive into today?",
+    ]
+  },
+  {
+    match: /your name|who are you|what are you|introduce yourself/i,
+    reply: `I'm **Quantum AI** — a fast, intelligent assistant built to help you think, create, and code.
+
+Here's what I can do:
+- **Answer questions** across science, math, history, tech, and more
+- **Write and edit** — emails, essays, stories, code, documentation
+- **Brainstorm** ideas, strategies, and solutions
+- **Explain** complex topics in plain language
+- **Debug code** and write scripts
+
+What would you like to tackle?`
+  },
+  {
+    match: /what can you do|your (features|abilities|capabilities)|help me with/i,
+    reply: `Here's my full capability rundown:
+
+**Knowledge & Research**
+- Science, math, history, geography, philosophy, and more
+- Explain complex topics simply
+
+**Writing & Editing**
+- Essays, emails, stories, scripts, summaries
+- Proofreading and rewriting
+
+**Code & Tech**
+- Python, JavaScript, HTML/CSS, SQL, and more
+- Debugging, explaining code, writing algorithms
+
+**Creative**
+- Short stories, world-building, character design
+- Brainstorming and ideation
+
+**Data & Analysis**
+- Explain datasets, suggest approaches
+- Step-by-step problem solving
+
+Try asking me anything — what sounds interesting?`
+  },
+  {
+    match: /joke|funny|make me laugh|tell me something funny/i,
+    replies: [
+      "Why do programmers prefer dark mode?\n\nBecause **light attracts bugs.** 🐛",
+      "There are 10 types of people in the world:\n\nThose who understand **binary**, and those who don't. 😄",
+      "A SQL query walks into a bar. Walks up to two tables and asks:\n\n**\"Can I join you?\"** 🍺",
+      "How do you comfort a JavaScript developer?\n\n**You console them.** 🫡"
+    ]
+  },
+  {
+    match: /time|current time|what time is it/i,
+    reply: () => `The current time on your device is **${new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' })}**.`
+  },
+  {
+    match: /date|today|what day/i,
+    reply: () => `Today is **${new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}**.`
+  },
+  {
+    match: /quantum entanglement|entanglement/i,
+    reply: `**Quantum Entanglement** 🔬
+
+Quantum entanglement is one of the strangest phenomena in physics. Here's the simple version:
+
+When two particles become *entangled*, their quantum states become linked — no matter how far apart they are. Measuring one particle **instantly** tells you something about the other, even if it's on the other side of the universe.
+
+**The key points:**
+- It doesn't allow faster-than-light communication (the universe is safe)
+- Einstein called it *"spooky action at a distance"* — and he didn't like it
+- It's the backbone of **quantum computing** and **quantum cryptography**
+
+**Real-world use:** Quantum key distribution uses entangled particles to create encryption keys that are physically impossible to intercept without being detected.
+
+Want me to go deeper into any part of this?`
+  },
+  {
+    match: /prime number|primes/i,
+    reply: `Here's an efficient **Sieve of Eratosthenes** to find all primes up to \`n\`:
+
+\`\`\`python
+def primes_up_to(n):
+    """Returns a list of all prime numbers up to n."""
+    if n < 2:
+        return []
+    
+    sieve = [True] * (n + 1)
+    sieve[0] = sieve[1] = False
+    
+    for i in range(2, int(n**0.5) + 1):
+        if sieve[i]:
+            for j in range(i*i, n + 1, i):
+                sieve[j] = False
+    
+    return [i for i, is_prime in enumerate(sieve) if is_prime]
+
+# Example usage
+print(primes_up_to(50))
+# [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
+\`\`\`
+
+**Time complexity:** O(n log log n) — much faster than checking each number individually.
+**Space complexity:** O(n)
+
+Want me to explain how the sieve works, or write a different prime algorithm?`
+  },
+  {
+    match: /shuffle|shuffle array|random array/i,
+    reply: `**Fisher-Yates Shuffle** — the gold standard for random shuffling:
+
+\`\`\`javascript
+function shuffle(array) {
+  // Creates a copy so original isn't mutated
+  const arr = [...array];
+  
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]]; // swap
+  }
+  
+  return arr;
+}
+
+// Usage
+const cards = ['A', 'K', 'Q', 'J', '10'];
+console.log(shuffle(cards));
+// e.g. ['Q', 'A', '10', 'K', 'J']
+\`\`\`
+
+✅ **O(n) time** — perfectly uniform distribution, every permutation equally likely
+✅ **Non-destructive** — original array is unchanged
+✅ **In-place variant:** remove the \`[...array]\` spread and modify directly
+
+Want a TypeScript version, or a Python equivalent?`
+  },
+  {
+    match: /noir|detective story|2077/i,
+    reply: `**Glass Rain**
+
+The city never slept. It just dimmed.
+
+I watched the neon bleed into the rain-slick street below — reds and violets smearing across the chrome like a bruise that wouldn't heal. My office on the forty-second floor smelled of recycled air and old credit chips. The kind of place where hope came to file its taxes.
+
+She walked in at 2:17 AM, which meant she hadn't come for conversation.
+
+Her coat was dry. In Neo-Portland, that meant money. Real money — the kind that bought weather shielding and clean water and the small mercy of not dissolving in acid rain.
+
+*"You're Kade,"* she said. Not a question.
+
+I poured two glasses of something amber and expensive. The bottle said it was Scotch. The bottle lied about a lot of things.
+
+*"Used to be,"* I said.
+
+She sat down without being invited. I liked her immediately.
+
+*"I need you to find someone,"* she said. *"Someone the city has already decided is gone."*
+
+I looked at her eyes — corneal implants, high-end, but there was something behind them the hardware couldn't fake. Fear. The real kind.
+
+I took the case.
+
+They always make you regret it. I took it anyway.`
+  },
+  {
+    match: /startup idea|business idea|billion dollar|entrepreneurship/i,
+    reply: `**10 Startup Ideas for the Near Future** 🚀
+
+1. **AI grief companion** — emotionally intelligent support for bereavement that adapts over time
+2. **Micro-carbon markets** — individuals buy/sell carbon offsets at the kilogram level via mobile
+3. **Neural sleep coach** — wearable + app that learns your sleep architecture and optimises it nightly
+4. **Skill time bank** — trade hours of your expertise for others' skills, no money involved
+5. **Precision fermentation studio** — local lab spaces renting to food entrepreneurs making novel proteins
+6. **Digital legacy OS** — platform that manages your online life after death (accounts, messages, assets)
+7. **Real-time language mirror** — glasses that translate and subtitle conversations in your vision
+8. **Micro-factory network** — distributed 3D printing/CNC hubs for hyperlocal on-demand manufacturing
+9. **AI legal co-pilot** — consumer-facing tool that explains contracts in plain language and flags risks
+10. **Longevity concierge** — personal health protocol based on your bloodwork, genetics, and lifestyle
+
+Want me to flesh out the business model for any of these?`
+  },
+  {
+    match: /black hole/i,
+    reply: `**Black Holes** 🕳️
+
+A black hole forms when a massive star — typically 20+ times the Sun's mass — exhausts its nuclear fuel. Without the outward pressure from fusion reactions, gravity collapses the core in **milliseconds**, triggering a supernova. What remains is so dense that **spacetime itself curves to a closed loop** — the escape velocity exceeds the speed of light.
+
+**Anatomy of a black hole:**
+- **Singularity** — the infinitely dense centre where known physics breaks down
+- **Event horizon** — the point of no return; cross it and you can't escape
+- **Photon sphere** — where light itself orbits the black hole
+- **Accretion disk** — superheated gas spiralling inward, glowing brightly
+
+**Types:**
+- Stellar (a few solar masses) → Supermassive (millions to billions, like Sgr A* in our galaxy)
+
+**Did you know?** Time slows down near a black hole. An observer hovering near the event horizon would age far slower than someone far away — real *Interstellar*-style time dilation.
+
+What aspect would you like to explore further?`
+  },
+  {
+    match: /explain|how does|how do|what is|tell me about|describe/i,
+    replies: [
+      "Great question! Could you be a bit more specific? The more context you give me, the more precise and useful my answer will be.",
+      "I'd love to explain that. Give me a bit more detail — what aspect are you most curious about?",
+      "That's a broad topic with a lot of depth! Which angle interests you most — the science, the history, the practical applications, or something else?",
+    ]
+  },
+  {
+    match: /python|javascript|typescript|html|css|react|sql|code|program|debug|function|algorithm/i,
+    replies: [
+      "Happy to help with code! What are you building, or what's the specific problem you're running into? Share any relevant code and I'll dig in.",
+      "Let's solve this. What language are you working in, and what's the behaviour you're seeing vs. what you expect?",
+      "Code help incoming! Drop your snippet or describe what you need, and I'll write something for you.",
+    ]
+  },
+  {
+    match: /thanks|thank you|ty |thx|cheers/i,
+    replies: [
+      "Anytime! Is there anything else you'd like to explore?",
+      "Happy to help! What's next?",
+      "You're welcome! Keep the questions coming. 😄",
+    ]
+  },
+  {
+    match: /bye|goodbye|see you|cya|later/i,
+    replies: [
+      "See you later! Come back anytime. 👋",
+      "Bye! Great chatting with you. 🚀",
+    ]
+  },
+  {
+    match: /weather/i,
+    reply: "I don't have real-time data access, so I can't fetch live weather. Check **weather.com** or ask your phone's assistant for the latest forecast where you are!"
+  },
+  {
+    match: /meaning of life|42|purpose of life/i,
+    reply: "According to *The Hitchhiker's Guide to the Galaxy*, the answer is **42**.\n\nThe harder question, as Douglas Adams pointed out, is figuring out what the *question* actually is.\n\nPhilosophically: most answers cluster around **connection, growth, and contribution** — but the honest answer is that meaning is something you construct, not discover. What do you think?"
+  },
+  {
+    match: /fibonacci|fib sequence/i,
+    reply: `**Fibonacci Sequence** 🌀
+
+\`\`\`python
+def fibonacci(n):
+    """Returns the nth Fibonacci number (0-indexed)."""
+    if n <= 1:
+        return n
+    a, b = 0, 1
+    for _ in range(n - 1):
+        a, b = b, a + b
+    return b
+
+# Generate first 10 numbers
+sequence = [fibonacci(i) for i in range(10)]
+print(sequence)  # [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
+\`\`\`
+
+The sequence appears everywhere in nature — the spiral of a nautilus shell, the arrangement of sunflower seeds, the branching of trees. It's deeply connected to the **Golden Ratio** (≈ 1.618), which appears in art, architecture, and biology.
+
+Want the recursive version, the memoised version, or more on the maths?`
+  },
+];
+
+const FALLBACKS = [
+  "Interesting question! I want to give you a good answer — could you share a bit more context or detail?",
+  "I'm on it. Could you expand on that a little? The more you tell me, the more useful I can be.",
+  "That's a great area to explore. Could you be more specific about what angle you're most interested in?",
+  "Happy to help with that. A little more detail would let me give you a much better answer — what specifically are you after?",
+  "Good one. Could you give me a bit more to work with — what's the context or the end goal here?",
+];
+
+function getReply(text) {
+  for (const entry of KB) {
+    if (entry.match.test(text)) {
+      if (typeof entry.reply === 'function') return entry.reply();
+      if (entry.replies) return entry.replies[Math.floor(Math.random() * entry.replies.length)];
+      return entry.reply;
+    }
+  }
+  return FALLBACKS[Math.floor(Math.random() * FALLBACKS.length)];
+}
+
+// ══════════════════════════════════════
+//  SESSIONS
+// ══════════════════════════════════════
+function save() {
+  localStorage.setItem('qai_s', JSON.stringify(sessions));
+  localStorage.setItem('qai_cur', cid || '');
+}
+function cur() { return sessions.find(s => s.id === cid) || null; }
+
+function createSession() {
+  const id = 'sess_' + Date.now();
+  const sess = { id, title:'New conversation', messages:[], created:Date.now() };
+  sessions.push(sess);
+  cid = id; save(); return sess;
+}
+
+function newChat() {
+  createSession();
+  document.getElementById('search-input').value = '';
+  renderAll(); focusInput();
+}
+
+function switchSession(id) {
+  cid = id; save(); renderAll(); focusInput();
+}
+
+function deleteSession(id, e) {
+  e.stopPropagation();
+  sessions = sessions.filter(s => s.id !== id);
+  if (cid === id) cid = sessions.length ? sessions[sessions.length-1].id : null;
+  save(); renderAll(); toast('Conversation deleted');
+}
+
+function clearChat() {
+  const s = cur();
+  if (!s || !s.messages.length) { toast('Chat is already empty'); return; }
+  s.messages = []; s.title = 'New conversation'; save(); renderAll();
+  toast('Chat cleared');
+}
+
+function deleteAll() {
+  if (!confirm('Delete ALL conversations? This cannot be undone.')) return;
+  sessions = []; cid = null; save();
+  closeSettings(); renderAll(); toast('All conversations deleted');
+}
+
+// ══════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════
+function renderAll() { renderHistory(); renderChat(); renderTopBar(); }
+
+function renderTopBar() {
+  const s = cur();
+  document.getElementById('top-title').textContent = s ? s.title : 'Quantum AI';
+}
+
+function renderHistory(filter) {
+  const el = document.getElementById('history-list');
+  let list = [...sessions].reverse();
+  if (filter) list = list.filter(s => s.title.toLowerCase().includes(filter.toLowerCase()));
+
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-hist">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      <span>${filter ? 'No matches found' : 'No conversations yet'}</span>
+    </div>`;
+    return;
+  }
+
+  el.innerHTML = list.map(s => {
+    const age = timeAgo(s.created);
+    return `<div class="hist-item${s.id===cid?' active':''}" onclick="switchSession('${s.id}')">
+      <div class="hist-dot"></div>
+      <span class="hist-title">${esc(s.title)}</span>
+      <span class="hist-time">${age}</span>
+      <button class="hist-del" onclick="deleteSession('${s.id}',event)" title="Delete">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function filterHistory(q) { renderHistory(q); }
+
+function timeAgo(ts) {
+  const secs = Math.floor((Date.now() - ts) / 1000);
+  if (secs < 60) return 'now';
+  if (secs < 3600) return Math.floor(secs/60) + 'm';
+  if (secs < 86400) return Math.floor(secs/3600) + 'h';
+  return Math.floor(secs/86400) + 'd';
+}
+
+function renderChat() {
+  const win = document.getElementById('chat-win');
+  const s = cur();
+  if (!s || !s.messages.length) {
+    win.innerHTML = `<div class="welcome">
+      <div class="w-orb"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      <h1>Hello, I'm <span>Quantum</span></h1>
+      <p>Your intelligent AI assistant. Ask me anything — science, code, creative writing, or just a conversation.</p>
+      <div class="sug-grid">
+        ${SUGS.map(sg=>`<button class="sug-card" onclick="useSug(${JSON.stringify(sg.txt)})">
+          <span class="sug-icon">${sg.icon}</span>
+          <div class="sug-label">${sg.lbl}</div>
+          <div class="sug-text">${sg.txt}</div>
+        </button>`).join('')}
+      </div>
+    </div>`;
+    return;
+  }
+
+  const showTs = document.getElementById('tog-timestamps').checked;
+  const compact = document.getElementById('tog-compact').checked;
+  const gap = compact ? '2px' : '4px';
+
+  let html = '';
+  s.messages.forEach((m, i) => {
+    // Day divider
+    if (i === 0) {
+      html += dayDivider(m.ts || s.created);
+    }
+    html += buildMsg(m, showTs);
+  });
+
+  win.innerHTML = html;
+  if (document.getElementById('tog-autoscroll').checked) scrollBot();
+}
+
+function dayDivider(ts) {
+  const d = new Date(ts || Date.now());
+  const today = new Date();
+  let label;
+  if (d.toDateString() === today.toDateString()) label = 'Today';
+  else {
+    const diff = Math.floor((today - d) / 86400000);
+    label = diff === 1 ? 'Yesterday' : d.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+  }
+  return `<div class="day-divider"><span>${label}</span></div>`;
+}
+
+function buildMsg(m, showTs) {
+  const isUser = m.role === 'user';
+  const time = m.ts ? new Date(m.ts).toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'}) : '';
+
+  const av = isUser
+    ? `<div class="av usr">U</div>`
+    : `<div class="av ai"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>`;
+
+  const content = isUser ? esc(m.content) : fmtAI(m.content);
+  const bubble = `<div class="bubble ${isUser?'user':'ai'}">${content}</div>`;
+
+  const row = isUser
+    ? `<div class="msg-row user">${bubble}${av}</div>`
+    : `<div class="msg-row ai">${av}${bubble}</div>`;
+
+  let meta = '';
+  if (showTs && time) {
+    const copy = !isUser ? `<button class="copy-btn" onclick="copyMsg(${JSON.stringify(m.content)},this)"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button>` : '';
+    meta = `<div class="msg-meta ${isUser?'user':''}">${copy}<span class="msg-time">${time}</span></div>`;
+  }
+
+  return row + meta;
+}
+
+function fmtAI(raw) {
+  return esc(raw)
+    .replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) =>
+      `<pre${lang ? ` data-lang="${lang}"` : ''}><code>${code.trim()}</code></pre>`)
+    .replace(/`([^`\n]+)`/g, '<code>$1</code>')
+    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>')
+    .replace(/^(?!<[hup])/, '<p>')
+    .replace(/(?<![>])$/, '</p>');
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ══════════════════════════════════════
+//  SEND
+// ══════════════════════════════════════
+function useSug(txt) {
+  document.getElementById('user-input').value = txt;
+  sendMessage();
+}
+
+// Backend server URL — change the port here if you set a different PORT in .env
+const SERVER_URL = 'http://127.0.0.1:3001/api/chat';
+let serverAvailable = null; // null = unknown yet, true/false once checked
+
+async function sendMessage() {
+  if (busy) return;
+  const inp = document.getElementById('user-input');
+  const txt = inp.value.trim();
+  if (!txt) return;
+
+  if (!cur()) createSession();
+  const s = cur();
+  const ts = Date.now();
+  s.messages.push({ role:'user', content:txt, ts });
+  if (s.title === 'New conversation') {
+    s.title = txt.length > 30 ? txt.slice(0,30)+'…' : txt;
+  }
+  save();
+  inp.value = '';
+  autoResize();
+  updateCharCount('');
+  renderAll();
+
+  busy = true;
+  document.getElementById('send-btn').disabled = true;
+  addTyping();
+
+  try {
+    const reply = await getAIReply(s.messages);
+    removeTyping();
+    s.messages.push({ role:'ai', content:reply, ts:Date.now() });
+    save(); renderAll();
+    if (document.getElementById('tog-sound').checked) playChime();
+  } catch (err) {
+    removeTyping();
+    console.warn('Falling back to local replies:', err.message);
+    // Graceful fallback to the built-in canned responses
+    const reply = getReply(txt);
+    s.messages.push({ role:'ai', content:reply, ts:Date.now() });
+    save(); renderAll();
+  }
+
+  busy = false;
+  document.getElementById('send-btn').disabled = false;
+}
+
+// Calls the local backend server, which holds the real Anthropic API key.
+// Throws if the server isn't reachable, so sendMessage() can fall back.
+async function getAIReply(messages) {
+  const minDelay = document.getElementById('tog-stream').checked
+    ? new Promise(r => setTimeout(r, 350 + Math.random() * 300))
+    : Promise.resolve();
+
+  const res = await fetch(SERVER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages: messages.map(m => ({ role: m.role, content: m.content })) })
+  });
+
+  await minDelay; // keeps the typing indicator feeling natural even on fast replies
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.error || `Server responded ${res.status}`);
+  }
+
+  const data = await res.json();
+  serverAvailable = true;
+  updateConnectionBadge(true);
+  return data.reply;
+}
+
+function updateConnectionBadge(isLive) {
+  const pill = document.querySelector('.model-pill');
+  const statusRow = document.querySelector('.status-row span');
+  if (isLive) {
+    pill.textContent = 'Gemini · Live';
+    pill.style.color = 'var(--green)';
+    pill.style.background = 'rgba(34,197,94,.1)';
+    pill.style.borderColor = 'rgba(34,197,94,.25)';
+    if (statusRow) statusRow.textContent = 'Connected to Gemini API';
+  } else {
+    pill.textContent = 'Quantum 1.0 · Offline';
+    pill.style.color = 'var(--amber)';
+    pill.style.background = 'rgba(245,158,11,.1)';
+    pill.style.borderColor = 'rgba(245,158,11,.25)';
+    if (statusRow) statusRow.textContent = 'Server not running · using local replies';
+  }
+}
+
+// Check server connectivity on load so the badge is accurate immediately
+async function checkServerOnLoad() {
+  try {
+    const res = await fetch(SERVER_URL.replace('/api/chat', '/'), { method: 'GET' });
+    updateConnectionBadge(res.ok);
+  } catch {
+    updateConnectionBadge(false);
+  }
+}
+
+function addTyping() {
+  const win = document.getElementById('chat-win');
+  const welcome = win.querySelector('.welcome');
+  if (welcome) welcome.remove();
+  const row = document.createElement('div');
+  row.className = 'msg-row ai'; row.id = 'typing-row';
+  row.innerHTML = `
+    <div class="av ai"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+    <div class="bubble ai"><div class="typing-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>`;
+  win.appendChild(row);
+  scrollBot();
+}
+function removeTyping() { const el = document.getElementById('typing-row'); if (el) el.remove(); }
+
+// ══════════════════════════════════════
+//  COPY
+// ══════════════════════════════════════
+function copyMsg(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.innerHTML;
+    btn.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Copied!`;
+    setTimeout(() => { btn.innerHTML = orig; }, 1500);
+  });
+}
+
+// ══════════════════════════════════════
+//  EXPORT
+// ══════════════════════════════════════
+function exportChats() {
+  const s = cur();
+  if (!s || !s.messages.length) { toast('Nothing to export', true); return; }
+  const text = s.messages.map(m => `[${m.role === 'user' ? 'You' : 'Quantum AI'}]\n${m.content}`).join('\n\n---\n\n');
+  const blob = new Blob([text], { type:'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `quantum-ai-${Date.now()}.txt`;
+  a.click();
+  toast('Chat exported');
+}
+
+// ══════════════════════════════════════
+//  SOUND
+// ══════════════════════════════════════
+function playChime() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [[880, 0], [1100, 0.08], [880, 0.16]].forEach(([freq, start]) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.07, ctx.currentTime + start);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + 0.2);
+      osc.start(ctx.currentTime + start);
+      osc.stop(ctx.currentTime + start + 0.25);
+    });
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════
+//  SETTINGS
+// ══════════════════════════════════════
+function openSettings()  { document.getElementById('settings-overlay').classList.add('open'); }
+function closeSettings() { document.getElementById('settings-overlay').classList.remove('open'); }
+function overlayBg(e)    { if (e.target.id === 'settings-overlay') closeSettings(); }
+
+function changeFontSize(val) {
+  document.querySelector('.chat-win').style.fontSize = val + 'px';
+}
+
+// ══════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════
+function scrollBot() {
+  const w = document.getElementById('chat-win');
+  setTimeout(() => { w.scrollTop = w.scrollHeight; }, 20);
+}
+function focusInput() { document.getElementById('user-input').focus(); }
+
+let _toastTimer;
+function toast(msg, err) {
+  const t = document.getElementById('toast');
+  const icon = t.querySelector('svg');
+  const span = document.getElementById('toast-msg');
+  span.textContent = msg;
+  t.className = 'toast' + (err ? ' err' : '');
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+function autoResize() {
+  const ta = document.getElementById('user-input');
+  ta.style.height = 'auto';
+  ta.style.height = Math.min(ta.scrollHeight, 160) + 'px';
+}
+
+function updateCharCount(val) {
+  const el = document.getElementById('char-count');
+  const len = val.length;
+  el.textContent = len > 100 ? `${len} chars` : '';
+  el.className = 'char-count' + (len > 800 ? ' warn' : '');
+}
+
+// ── Input events ──
+const inp = document.getElementById('user-input');
+inp.addEventListener('input', () => { autoResize(); updateCharCount(inp.value); });
+inp.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey && document.getElementById('tog-enter').checked) {
+    e.preventDefault(); sendMessage();
+  }
+});
+
+// ── Keyboard shortcut: Cmd/Ctrl+K = new chat ──
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); newChat(); }
+  if (e.key === 'Escape') closeSettings();
+});
+
+// ══════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════
+if (!cid && !sessions.length) createSession();
+else if (!cid && sessions.length) cid = sessions[sessions.length-1].id;
+renderAll();
+focusInput();
+checkServerOnLoad();
+</script>
+</body>
+</html>
